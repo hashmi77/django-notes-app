@@ -1,35 +1,37 @@
 pipeline {
-    agent any 
+    agent any
     
     stages{
-        stage("Clone Code"){
-            steps {
-                echo "Cloning the code"
-                git url:"https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
+        stage("cloning"){
+            steps{
+                echo "cloning git"
+                git url: "https://github.com/hashmi77/django-notes-app.git", branch: "main"
+            }
+            
+        }
+        stage("build"){
+            steps{
+                echo "build code" 
+                sh "docker build -t mynote ."
             }
         }
-        stage("Build"){
-            steps {
-                echo "Building the image"
-                sh "docker build -t my-note-app ."
-            }
-        }
-        stage("Push to Docker Hub"){
-            steps {
-                echo "Pushing the image to docker hub"
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                sh "docker tag my-note-app ${env.dockerHubUser}/my-note-app:latest"
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/my-note-app:latest"
+        stage("push imgaes"){
+            steps{
+                echo "pushimages on hub"
+                withCredentials([usernamePassword(credentialsId: "hashmi",passwordVariable:"hashmipass",usernameVariable:"hashmiUser")]){
+                sh "docker tag mynote ${env.hashmiUser}/mynote:latest"
+                sh "docker login -u ${env.hashmiUser} -p ${env.hashmipass}"
+                sh "docker push ${env.hashmiUser}/mynote:latest"
                 }
             }
         }
-        stage("Deploy"){
-            steps {
-                echo "Deploying the container"
+        stage("deploy"){
+            steps{
+                echo "deploy"
                 sh "docker-compose down && docker-compose up -d"
-                
             }
         }
+        
     }
+
 }
